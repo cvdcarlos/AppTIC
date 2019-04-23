@@ -13,7 +13,8 @@ import {
   ToastAndroid,
   TimePickerAndroid,
   LayoutAnimation,
-  Animated
+  Animated,
+  Dimensions
 } from 'react-native';
 
 import { Card, ListItem, Button} from 'react-native-elements';
@@ -34,7 +35,7 @@ const CustomLayoutAnimation = {
   delete: { type: 'easeOut', property: 'opacity' } 
 };
 
-
+const { width, height } = Dimensions.get('window')
 
 export default class HomeScreen extends Component {
     constructor (props) {
@@ -58,18 +59,10 @@ export default class HomeScreen extends Component {
           isHidden: false,
           index: 1,
           
-          
-          fill: 64,
-
-
-
           Porcentajebateria: 90,
           temperatura: '21',
           humedad: '60',
           
-          
-          
-
           size_bateria:260
 
         }
@@ -78,8 +71,6 @@ export default class HomeScreen extends Component {
           UIManager.setLayoutAnimationEnabledExperimental(true)
           
         }
-        
-        
       };
 
       
@@ -288,14 +279,7 @@ export default class HomeScreen extends Component {
   
       this.setState({index: index});
     }
-    terminoreloj(){
-      
-      console.log('termnino');
-
-    }
-    fincountdown(){
-      console.log('fincountdown');
-    }
+    
     parartimeout(){
       console.log('PARARTIEMPO');
       clearTimeout(this.tiempo);
@@ -387,15 +371,9 @@ export default class HomeScreen extends Component {
                   </View>
              </View>
               
-              
-          
-              
+        
               <View style={styles.content}>
                 <View style={[LayoutSwitch, {backgroundColor: 'skyblue'}]}>
-                  
-                
-                  
-                  
                     <View style={[cronstyle]}>
                         <CountDown
                           size={35}
@@ -411,21 +389,12 @@ export default class HomeScreen extends Component {
                           running = {this.state.timer_run}
                           />
 
-                          
-
-                          
-
                       </View>
                 
-                     
-                    
-                  
                   </View>
                 <View style={[LayoutSensores, {backgroundColor: 'steelblue'}]}>
                   <Text style={styles.textotemperatura}>{this.state.temperatura}º</Text> 
                   <Text style={styles.textohumedad}>{this.state.humedad}%</Text> 
-                  
-                  
                 </View>
 
                 {/*<View style={[reloj]}>
@@ -451,8 +420,6 @@ export default class HomeScreen extends Component {
                             name="power-off"
                             size={70}
                             color="#7CFC00"
-                            
-                            
                           />
                         }
                         type="clear"
@@ -472,7 +439,7 @@ export default class HomeScreen extends Component {
 
                   <AnimatedCircularProgress
                       size={this.state.size_bateria}
-                      width={3}
+                      width={4}
                       duration={2000}
                       fill={fill}
                       tintColor="#00e0ff"
@@ -582,10 +549,10 @@ const styles = StyleSheet.create({
   speedom:{
     justifyContent:'center', 
     alignItems: 'center',
+    top:5
+    //width: width * 0.8, // 80% of screen's width
+    //height: height * 0.8 // 20% of screen's height
     
-    
-    
-
   },
   textotemperatura: {
     color: 'white',
