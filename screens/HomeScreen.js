@@ -35,7 +35,8 @@ const CustomLayoutAnimation = {
   delete: { type: 'easeOut', property: 'opacity' } 
 };
 
-const { width, height } = Dimensions.get('window')
+//const { width, height } = Dimensions.get('window')
+var window = Dimensions.get('window');
 
 export default class HomeScreen extends Component {
     constructor (props) {
@@ -63,9 +64,15 @@ export default class HomeScreen extends Component {
           temperatura: '21',
           humedad: '60',
           
-          size_bateria:260
+          size_bateria: 0,
+          size_power: 0,
+          posicion_temp: 0,
+          posicion_hum: 0
+
+         
 
         }
+        
         
         if (Platform.OS === 'android') {
           UIManager.setLayoutAnimationEnabledExperimental(true)
@@ -79,12 +86,15 @@ export default class HomeScreen extends Component {
         title: 'Home',
         headerStyle: {
             backgroundColor: 'steelblue',
+            height: window.height*0.1
           },
         headerTintColor: 'white',
         headerTitleStyle: {
-            fontWeight: 'bold',
-            textAlign: 'center',
-            width: '90%'
+          fontWeight: 'bold',
+          textAlign:"center", 
+          flex:1,
+          fontSize:30
+           
             
           }
     }
@@ -99,17 +109,85 @@ export default class HomeScreen extends Component {
     
         }, 1000 * 10);
     }*/
+    componentDidMount() {
+      if (window.height > 600){
+        this.setState({size_bateria: 370})
+        this.setState({size_power: 95})
 
+        this.setState({posicion_temp: 105})
+        this.setState({posicion_hum: 185})
+
+      }else if(window.height >550 && window.height <= 600) {
+        this.setState({size_bateria: 300})
+        this.setState({size_power: 82})
+
+        this.setState({posicion_temp: 100})
+        this.setState({posicion_hum: 180})
+      }else{
+        this.setState({size_bateria: 260})
+        this.setState({size_power: 73});
+
+        this.setState({posicion_temp: 95})
+        this.setState({posicion_hum: 175})
+      }
+    };
+
+    _Bajar_sensores = () =>{
+      if (window.height > 600){
+         this.setState({posicion_temp: -10})
+        this.setState({posicion_hum: 70})
+
+      }else if(window.height >550 && window.height <= 600) {
+        this.setState({posicion_temp: -5})
+        this.setState({posicion_hum: 75})
+      }else{
+        this.setState({posicion_temp: 0})
+        this.setState({posicion_hum: 80})
+      }
+
+    }
+    _Subir_sensores = () =>{
+      if (window.height > 600){
+        this.setState({posicion_temp: 105})
+        this.setState({posicion_hum: 185})
+      }else if(window.height >550 && window.height <= 600) {
+        this.setState({posicion_temp: 100})
+        this.setState({posicion_hum: 180})
+      }else{
+        this.setState({posicion_temp: 95})
+        this.setState({posicion_hum: 175})
+      }
+
+    }
     _Agrandar = () => {
       // Animate the update
       LayoutAnimation.spring();
-      this.setState({size_bateria: 260})
+      if (window.height > 600){
+        this.setState({size_bateria: 370})
+
+      }else if(window.height >550 && window.height <= 600) {
+        this.setState({size_bateria: 300})
+      }else{
+        this.setState({size_bateria: 260})
+      }
+      
+      
+      
     }
     _Achicar = () => {
       // Animate the update
       LayoutAnimation.spring();
-      this.setState({size_bateria: 185})
+      if (window.height > 600){
+        this.setState({size_bateria: 260})
+
+      }else if(window.height >550 && window.height <= 600) {
+        this.setState({size_bateria: 220})
+      }else{
+        this.setState({size_bateria: 200})
+      }
     }
+
+    
 
     desactivarBomba(){
       console.log('desactivarBomba');
@@ -125,6 +203,7 @@ export default class HomeScreen extends Component {
       .catch((err) => console.log(err.message))
      }
     ActivarBomba(){
+      console.log('cacdf')
         BluetoothSerial.write("T").then((res) => {
           
           console.log('Activar Bomba')
@@ -291,6 +370,7 @@ export default class HomeScreen extends Component {
           this.setState({switchActivo: true});
           this.mostrar_reloj();
           this._Achicar();
+          this._Bajar_sensores();
           this.onPress(0);
   
       }else{
@@ -302,9 +382,10 @@ export default class HomeScreen extends Component {
           this.setState({horaview:0});
           PushNotification.cancelLocalNotifications({id: '123'});
           //this.parartimeout();
-          
-          this.onPress(1);
           this._Agrandar();
+          this._Subir_sensores();
+          this.onPress(1);
+          
       }
      }
     /*parar_reloj(){
@@ -332,21 +413,21 @@ export default class HomeScreen extends Component {
       
     }*/
     render() {
-      var LayoutSwitch = this.state.index === 0 ? { flexDirection:'column',height:160} : {};
-      var LayoutSensores = {height:100};
-      var Layoutbateria = {height:166,top: 30};
-      var cronstyle = this.state.index === 0 ? {top:18} : {display:'none'};
+      var LayoutSwitch = this.state.index === 0 ? { flexDirection:'column',height: window.height*0.2} : {};
+      var LayoutSensores = {height: window.height*0.15};
+      var LayoutBateria = this.state.index === 0 ? {height: window.height*0.43, justifyContent:'center', alignItems: 'center'} : {height: window.height*0.61, justifyContent:'center', alignItems: 'center'};
+      var cronstyle = this.state.index === 0 ? {justifyContent:'center', alignItems: 'center'} : {display:'none'};
       var reloj = this.state.index  === 0 ? {justifyContent:'center', alignItems: 'center'} : {display:'none'};
 
 
       //var cronstyle = this.state.index === 0 ? {display: 'flex', top: 40} : {display: 'none', width: 400};
       //var reloj = this.state.index === 0 ? {position:'absolute', right: 165, top: 90} : {display: 'none'};
-      var power = this.state.index === 0 ? {display:'none'} : {justifyContent:'center', alignItems: 'center', bottom:95};
+      var power = this.state.index === 0 ? {height:0,width:0} : {};
       
       //var middleStyle = this.state.index === 2 ? {width: 40} : {flex: 1};
       //var rightStyle = {flex: 1};
 
-      var whiteHeight = this.state.index * 80;
+      //var whiteHeight = this.state.index * 80;
       
       const fill = this.state.Porcentajebateria;
         return (
@@ -393,9 +474,26 @@ export default class HomeScreen extends Component {
                 
                   </View>
                 <View style={[LayoutSensores, {backgroundColor: 'steelblue'}]}>
-                  <Text style={styles.textotemperatura}>{this.state.temperatura}º</Text> 
-                  <Text style={styles.textohumedad}>{this.state.humedad}%</Text> 
+                    <View style={[power]}>
+                      <Button 
+                            icon={
+                              <Icon
+                                name="power-off"
+                                size={this.state.size_power}
+                                color='skyblue'
+                              />
+                            }
+                            type="clear"
+                            onPress={this.ActivarBomba.bind(this)}
+                          />
+                        </View> 
+
+                        
+                    <Text style={{bottom: this.state.posicion_temp, color: 'white',fontSize: 60,left:10,}}>{this.state.temperatura}º</Text> 
+                    <Text style={{bottom: this.state.posicion_hum, color: 'white',fontSize: 60,textAlign: 'right'}}>{this.state.humedad}%</Text>  
+                        
                 </View>
+                
 
                 {/*<View style={[reloj]}>
                           <Icon.Button
@@ -413,19 +511,7 @@ export default class HomeScreen extends Component {
                             
 
                 </View>*/}
-                <View style={[power]}>
-                  <Button
-                        icon={
-                          <Icon
-                            name="power-off"
-                            size={70}
-                            color="#7CFC00"
-                          />
-                        }
-                        type="clear"
-                        onPress={this.ActivarBomba.bind(this)}
-                      />
-                      </View>
+                
 
                       
                 {/*<View style={{height: 100, backgroundColor: 'steelblue'}}>*/}
@@ -434,7 +520,7 @@ export default class HomeScreen extends Component {
                 
                 </View>*/}
                 
-                
+                <View style={[LayoutBateria]}>
                   <View style={styles.speedom}>
 
                   <AnimatedCircularProgress
@@ -442,8 +528,8 @@ export default class HomeScreen extends Component {
                       width={4}
                       duration={2000}
                       fill={fill}
-                      tintColor="#00e0ff"
-                      backgroundColor="#3d5875"
+                      tintColor="#00c3ff"
+                      backgroundColor='steelblue'
                     >
                       {fill => <Text style={styles.points}>{Math.round((fill))}%</Text>}
                     </AnimatedCircularProgress>
@@ -471,7 +557,8 @@ export default class HomeScreen extends Component {
                       }
                       
                       
-                    </AnimatedCircularProgress>*/}
+                    </AnimatedCircularProgress>
+                    </View>
                   </View>
 
                   {/*<View style={[styles.box, {width: this.state.w, height: this.state.h}]} 
@@ -490,7 +577,7 @@ export default class HomeScreen extends Component {
                                 />*/}
 
                 
-                
+                  </View> 
               </View> 
               
               {/*<View style={[power]}>
@@ -528,6 +615,7 @@ export default class HomeScreen extends Component {
             
 
           </View>
+          </View> 
             
         );
     }
@@ -549,37 +637,17 @@ const styles = StyleSheet.create({
   speedom:{
     justifyContent:'center', 
     alignItems: 'center',
-    top:5
+    
+    
     //width: width * 0.8, // 80% of screen's width
     //height: height * 0.8 // 20% of screen's height
     
   },
-  textotemperatura: {
-    color: 'white',
-    fontSize: 60,
-    left:10,
-    top:10,
-    
-    
-  },
-  points:{
-    fontSize:60,
-    
-  },
-  textohumedad: {
-    color: 'white',
-    fontSize: 60,
-    bottom:70,
-    left:240
-    
-  
-    
-  },
-  
   toolbarButton:{
-    width: 50,
-    marginTop: 8,
-    right: 10
+    flex: 1,
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
+    marginRight: 10
     
   },
   toolbar:{
@@ -587,19 +655,21 @@ const styles = StyleSheet.create({
     paddingBottom:10,
     flexDirection:'row',
     backgroundColor: 'skyblue',
+    height: window.height*0.09
   },
   toolbarTitle:{
-    textAlign:'center',
+    textAlign:'right',
     fontWeight:'bold',
     fontSize: 20,
     flex:1,
     marginTop:6,
+    marginLeft:70,
     color: "white"
   },
   points: {
     textAlign: 'center',
-    color: '#7591af',
-    fontSize: 50,
+    color: '#dce6ea',
+    fontSize: 85,
     fontWeight: '100',
   },
 });

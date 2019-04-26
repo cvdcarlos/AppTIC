@@ -6,7 +6,6 @@ import { createStackNavigator, createAppContainer } from "react-navigation";
 
 import LoginScreen from './screens/LoginScreen'
 import HomeScreen from './screens/HomeScreen'
-import Homenotif from './screens/Homenotif'
 
 class App extends React.Component {
   render() {
@@ -20,7 +19,7 @@ const AppNavigator = createStackNavigator(
   {
     Home: HomeScreen,
     Login: LoginScreen,
-    Homenotif: Homenotif,
+    
     
     
   },
