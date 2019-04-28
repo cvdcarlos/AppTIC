@@ -8,11 +8,12 @@ import {
   FlatList,
   Switch,
   TouchableOpacity,
-  ToastAndroid
+  ToastAndroid,
+  Dimensions
 } from 'react-native';
 var _ = require('lodash');
 import BluetoothSerial from 'react-native-bluetooth-serial'
-
+var window = Dimensions.get('window');
 export default class LoginScreen extends Component {
   constructor (props) {
     super(props)
@@ -26,7 +27,20 @@ export default class LoginScreen extends Component {
   }
   
   static navigationOptions = {
-      header: null //Para q no salga la barra navegadora de arriba
+    title: 'Caudal Solar',
+    headerStyle: {
+        backgroundColor: 'steelblue',
+        height: window.height*0.1
+      },
+    headerTintColor: 'white',
+    headerTitleStyle: {
+      fontWeight: 'bold',
+      textAlign:"center", 
+      flex:1,
+      fontSize:30
+       
+        
+      }
   }
   componentWillMount(){
 
@@ -164,19 +178,21 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   toolbar:{
-    paddingTop:30,
-    paddingBottom:30,
+    
     flexDirection:'row',
-    backgroundColor: 'steelblue',
+    backgroundColor: 'skyblue',
+    height: window.height*0.1
   },
   toolbarButton:{
-    width: 50,
-    marginTop: 8,
-    right: 10
+    flex: 1,
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
+    marginRight: 10,
+    marginBottom: 15
     
   },
   toolbarTitle:{
-    textAlign:'center',
+    textAlign:'right',
     fontWeight:'bold',
     fontSize: 20,
     flex:1,

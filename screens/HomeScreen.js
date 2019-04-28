@@ -264,7 +264,7 @@ export default class HomeScreen extends Component {
                 this.setState({horaview: hour});
                 this.setState({minutoview: minute});
                 this.setState({timer_run: true});            // no mostrar la alerta de termino al principio
-                /*this.tiempo = setTimeout(() => {
+                this.tiempo = setTimeout(() => {
                   // Your code
                   //console.log('se acabo');
 
@@ -277,8 +277,10 @@ export default class HomeScreen extends Component {
 
                   
 
+                  
+
               
-                }, 1000 * 59 * minute + 1000 * 60 * 60 * hour);*/
+                }, 1000 * 59 * minute + 1000 * 60 * 60 * hour);
                 
                 if (minute !== 0 || hour !== 0 ){
                 PushNotification.localNotificationSchedule({
@@ -388,7 +390,7 @@ export default class HomeScreen extends Component {
           this.setState({minutoview:0});
           this.setState({horaview:0});
           PushNotification.cancelLocalNotifications({id: '123'});
-          //this.parartimeout();
+          this.parartimeout();
           this._Agrandar();
           //this._Subir_sensores();
           this.onPress(1);
