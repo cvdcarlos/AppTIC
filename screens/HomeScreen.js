@@ -68,7 +68,9 @@ export default class HomeScreen extends Component {
           size_bateria: 0,
           size_power: 0,
           posicion_temp: 0,
-          posicion_hum: 0
+          posicion_hum: 0,
+
+          margin: 0
 
          
 
@@ -115,18 +117,22 @@ export default class HomeScreen extends Component {
         this.setState({size_bateria: 370})
         this.setState({size_power: 95})
 
+        this.setState({margin: 420})
+
         //this.setState({posicion_temp: 105})
         //this.setState({posicion_hum: 185})
 
       }else if(window.height >550 && window.height <= 600) {
         this.setState({size_bateria: 300})
         this.setState({size_power: 82})
+        this.setState({margin: 358})
 
         //this.setState({posicion_temp: 100})
         //this.setState({posicion_hum: 180})
       }else{
         this.setState({size_bateria: 260})
         this.setState({size_power: 73});
+        this.setState({margin: 320})
 
         //this.setState({posicion_temp: 95})
         //this.setState({posicion_hum: 175})
@@ -424,7 +430,7 @@ export default class HomeScreen extends Component {
       //var cronstyle = this.state.index === 0 ? {display: 'flex', top: 40} : {display: 'none', width: 400};
       //var reloj = this.state.index === 0 ? {position:'absolute', right: 165, top: 90} : {display: 'none'};
       var power = this.state.index === 0 ? {height:0,width:0} : {justifyContent:'center', alignItems: 'center'};
-      var textosensores = {};
+      var textosensores = this.state.index === 0 ? {display:'none'}:{ bottom: this.state.margin};
       //var middleStyle = this.state.index === 2 ? {width: 40} : {flex: 1};
       //var rightStyle = {flex: 1};
 
@@ -453,8 +459,9 @@ export default class HomeScreen extends Component {
                   </View>
              </View>
               
-        
+             
               <View style={styles.content}>
+              
                 <View style={[LayoutSwitch, {backgroundColor: 'skyblue'}]}>
                     <View style={[cronstyle]}>
                         <CountDown
@@ -475,28 +482,19 @@ export default class HomeScreen extends Component {
                 
                   </View>
                 <View style={[LayoutSensores, {backgroundColor: 'steelblue'}]}>
-                    <View style={[power]}>
-                    <Button
-                          icon={
-                            <Icon
-                              name="power-off"
-                              size={this.state.size_power}
-                              color='skyblue'
-                            />
-                          }
-                          type="clear"
-                          onPress={this.ActivarBomba.bind(this)}
-                        />
-                         
-                    </View> 
-
+                   
                     
-                </View>
-                <View style={[textosensores]}>
+                    </View>
+                    
+                
+                
                         <Text style={{color: 'white',fontSize: 60, left: 10, marginVertical:-82}}>{this.state.temperatura}º</Text> 
                         <Text style={{color: 'white',fontSize: 60,right:10 ,textAlign:'right'}}>{this.state.humedad}%</Text>  
+                
+                   
                         
-                </View>
+                
+                 
                 
 
                 {/*<View style={[reloj]}>
@@ -525,7 +523,10 @@ export default class HomeScreen extends Component {
                 </View>*/}
                 
                 <View style={[LayoutBateria]}>
+
+                
                   <View style={styles.speedom}>
+                 
 
                   <AnimatedCircularProgress
                       size={this.state.size_bateria}
@@ -582,6 +583,7 @@ export default class HomeScreen extends Component {
 
                 
                   </View> 
+                  
               </View> 
               
               {/*<View style={[power]}>
@@ -619,6 +621,22 @@ export default class HomeScreen extends Component {
             
 
           </View>
+          <View style={[textosensores]}>
+                    <Button
+                              icon={
+                                <Icon
+                                  name="power-off"
+                                  size={this.state.size_power}
+                                  color='skyblue'
+                                  
+                                />
+                              }
+                              type="clear"
+                             
+                              //containerStyle={textosensores}
+                              onPress={this.ActivarBomba.bind(this)}
+                            />
+                     </View>
           </View> 
             
         );

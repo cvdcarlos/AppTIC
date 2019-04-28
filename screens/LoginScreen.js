@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   },
   botonprueba:{
     width: 200,
-    marginBottom:10,
+    marginBottom:100,
 
   
   
