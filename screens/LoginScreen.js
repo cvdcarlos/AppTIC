@@ -161,13 +161,13 @@ export default class LoginScreen extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5FCFF',
+    backgroundColor: 'white',
   },
   toolbar:{
     paddingTop:30,
     paddingBottom:30,
     flexDirection:'row',
-    backgroundColor: '#1881cc',
+    backgroundColor: 'steelblue',
   },
   toolbarButton:{
     width: 50,
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
   bottombar:{
     paddingBottom:10,
     flexDirection:'row',
-    backgroundColor: '#1881cc',
+    backgroundColor: 'steelblue',
   },
   bottomTitle:{
     textAlign:'center',

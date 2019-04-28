@@ -14,7 +14,8 @@ import {
   TimePickerAndroid,
   LayoutAnimation,
   Animated,
-  Dimensions
+  Dimensions,
+  
 } from 'react-native';
 
 import { Card, ListItem, Button} from 'react-native-elements';
@@ -114,21 +115,21 @@ export default class HomeScreen extends Component {
         this.setState({size_bateria: 370})
         this.setState({size_power: 95})
 
-        this.setState({posicion_temp: 105})
-        this.setState({posicion_hum: 185})
+        //this.setState({posicion_temp: 105})
+        //this.setState({posicion_hum: 185})
 
       }else if(window.height >550 && window.height <= 600) {
         this.setState({size_bateria: 300})
         this.setState({size_power: 82})
 
-        this.setState({posicion_temp: 100})
-        this.setState({posicion_hum: 180})
+        //this.setState({posicion_temp: 100})
+        //this.setState({posicion_hum: 180})
       }else{
         this.setState({size_bateria: 260})
         this.setState({size_power: 73});
 
-        this.setState({posicion_temp: 95})
-        this.setState({posicion_hum: 175})
+        //this.setState({posicion_temp: 95})
+        //this.setState({posicion_hum: 175})
       }
     };
 
@@ -370,7 +371,7 @@ export default class HomeScreen extends Component {
           this.setState({switchActivo: true});
           this.mostrar_reloj();
           this._Achicar();
-          this._Bajar_sensores();
+          //this._Bajar_sensores();
           this.onPress(0);
   
       }else{
@@ -383,7 +384,7 @@ export default class HomeScreen extends Component {
           PushNotification.cancelLocalNotifications({id: '123'});
           //this.parartimeout();
           this._Agrandar();
-          this._Subir_sensores();
+          //this._Subir_sensores();
           this.onPress(1);
           
       }
@@ -422,8 +423,8 @@ export default class HomeScreen extends Component {
 
       //var cronstyle = this.state.index === 0 ? {display: 'flex', top: 40} : {display: 'none', width: 400};
       //var reloj = this.state.index === 0 ? {position:'absolute', right: 165, top: 90} : {display: 'none'};
-      var power = this.state.index === 0 ? {height:0,width:0} : {};
-      
+      var power = this.state.index === 0 ? {height:0,width:0} : {justifyContent:'center', alignItems: 'center'};
+      var textosensores = {};
       //var middleStyle = this.state.index === 2 ? {width: 40} : {flex: 1};
       //var rightStyle = {flex: 1};
 
@@ -475,22 +476,25 @@ export default class HomeScreen extends Component {
                   </View>
                 <View style={[LayoutSensores, {backgroundColor: 'steelblue'}]}>
                     <View style={[power]}>
-                      <Button 
-                            icon={
-                              <Icon
-                                name="power-off"
-                                size={this.state.size_power}
-                                color='skyblue'
-                              />
-                            }
-                            type="clear"
-                            onPress={this.ActivarBomba.bind(this)}
-                          />
-                        </View> 
+                    <Button
+                          icon={
+                            <Icon
+                              name="power-off"
+                              size={this.state.size_power}
+                              color='skyblue'
+                            />
+                          }
+                          type="clear"
+                          onPress={this.ActivarBomba.bind(this)}
+                        />
+                         
+                    </View> 
 
-                        
-                    <Text style={{bottom: this.state.posicion_temp, color: 'white',fontSize: 60,left:10,}}>{this.state.temperatura}º</Text> 
-                    <Text style={{bottom: this.state.posicion_hum, color: 'white',fontSize: 60,textAlign: 'right'}}>{this.state.humedad}%</Text>  
+                    
+                </View>
+                <View style={[textosensores]}>
+                        <Text style={{color: 'white',fontSize: 60, left: 10, marginVertical:-82}}>{this.state.temperatura}º</Text> 
+                        <Text style={{color: 'white',fontSize: 60,right:10 ,textAlign:'right'}}>{this.state.humedad}%</Text>  
                         
                 </View>
                 
@@ -668,7 +672,7 @@ const styles = StyleSheet.create({
   },
   points: {
     textAlign: 'center',
-    color: '#dce6ea',
+    color: 'white',
     fontSize: 85,
     fontWeight: '100',
   },
