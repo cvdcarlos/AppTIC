@@ -138,6 +138,8 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-background-timer')
+    implementation project(':react-native-background-job')
     implementation project(':react-native-svg')
     implementation project(':react-native-vector-icons')
     implementation project(':react-native-push-notification')

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {
   Platform,
+  ActivityIndicator,
   StyleSheet,
   Text,
   View,
@@ -29,7 +30,7 @@ export default class LoginScreen extends Component {
   static navigationOptions = {
     title: 'Caudal Solar',
     headerStyle: {
-        backgroundColor: 'steelblue',
+        backgroundColor: "#208eed",
         height: window.height*0.1
       },
     headerTintColor: 'white',
@@ -42,7 +43,7 @@ export default class LoginScreen extends Component {
         
       }
   }
-  componentWillMount(){
+  componentDidMount(){
 
     Promise.all([
       BluetoothSerial.isEnabled(),
@@ -75,13 +76,24 @@ export default class LoginScreen extends Component {
     })
 
   }
+  renderstate(){
+    if(this.state.connecting){
+      var indicador = {display:'none'}
+        return(
+          <View styles={[indicador]}>
+            <ActivityIndicator size="large"/>
+          </View>
+        )   
+    }
+  }
   connect (device) {
     this.setState({ connecting: true })
+    
     BluetoothSerial.connect(device.id)
     .then((res) => {
       console.log(`Connected to device ${device.name}`);
       
-      ToastAndroid.show(`Connected to device ${device.name}`, ToastAndroid.SHORT);
+      ToastAndroid.show(`Conectado a Bomba Solar`, ToastAndroid.SHORT);
       this.props.navigation.replace('Home');
     })
     .catch((err) => console.log((err.message)))
@@ -130,11 +142,11 @@ export default class LoginScreen extends Component {
   }*/
   
   render() {
-
+    var indicador = this.state.connecting === true ? {flex:1,alignSelf:'center', alignItems:'center',justifyContent:'center'}:{display:'none'};
     return (
       <View style={styles.container}>
       <View style={styles.toolbar}>
-            <Text style={styles.toolbarTitle}>Dispositivos Bluetooth</Text>
+            <Text style={styles.toolbarTitle}>Activar Bluetooth</Text>
             <View style={styles.toolbarButton}>
               <Switch
                 value={this.state.isEnabled}
@@ -155,15 +167,26 @@ export default class LoginScreen extends Component {
           keyExtractor={item => item.id}
           renderItem={(item) => this._renderItem(item)}
         />
-      <View style={styles.botonprueba}>
+
+       
+        
+        <View style={[indicador]}>
+          <ActivityIndicator size="large"/>
+        </View>
+        
+        
+        
+      
+      
+      {/*<View style={styles.botonprueba}>
             
           
             <Button title="ir al home(Boton Prueba)" 
                     onPress={()=>this.props.navigation.replace('Home')}
                     color="#1881cc"
                     
-            />
-      </View>
+    />
+    </View>*/}
         <View style={styles.bottombar}>
           <Text style={styles.bottomTitle}>Eliga su Dispositivo</Text>
         </View>
@@ -179,7 +202,7 @@ const styles = StyleSheet.create({
   },
   toolbar:{
     
-    flexDirection:'row',
+    
     backgroundColor: 'skyblue',
     height: window.height*0.1
   },
@@ -188,15 +211,14 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'flex-end',
     marginRight: 10,
-    marginBottom: 15
+    marginBottom: 20
     
   },
   toolbarTitle:{
-    textAlign:'right',
+    textAlign:'center',
     fontWeight:'bold',
     fontSize: 20,
-    flex:1,
-    marginTop:6,
+    marginTop:20,
     color: "white"
   },
   deviceName: {
@@ -210,7 +232,7 @@ const styles = StyleSheet.create({
   bottombar:{
     paddingBottom:10,
     flexDirection:'row',
-    backgroundColor: 'steelblue',
+    backgroundColor: "#208eed",
   },
   bottomTitle:{
     textAlign:'center',
@@ -226,5 +248,8 @@ const styles = StyleSheet.create({
 
   
   
+  },
+  indicator:{
+    alignSelf:'center'
   }
 });

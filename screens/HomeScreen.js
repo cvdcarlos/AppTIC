@@ -15,10 +15,12 @@ import {
   LayoutAnimation,
   Animated,
   Dimensions,
+  ImageBackground,
+  Image
   
 } from 'react-native';
 
-import { Card, ListItem, Button} from 'react-native-elements';
+import { Card, ListItem, Button, Badge, Divider} from 'react-native-elements';
 
 import BluetoothSerial from 'react-native-bluetooth-serial';
 
@@ -26,18 +28,39 @@ import CountDown from 'react-native-countdown-component';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import PushNotification from 'react-native-push-notification';
 import PushController from './PushController.js'; //The push controller created earlier
+import AnimatedEllipsis from 'react-native-animated-ellipsis';
+import BackgroundJob from 'react-native-background-job';
+import BackgroundTimer from 'react-native-background-timer';
 
-import { AnimatedCircularProgress } from 'react-native-circular-progress';
 
+ const regularJobKey = "regularJobKey";
+const exactJobKey = "exactJobKey";
+const foregroundJobKey = "foregroundJobKey";
+
+ const everRunningJobKey = "everRunningJobKey";
+ 
+ /*BackgroundJob.register({
+  jobKey: foregroundJobKey,
+  job: () => console.log(`Exact Job fired!. Key = ${foregroundJobKey}`)
+});
+BackgroundJob.schedule({
+  jobKey: foregroundJobKey,
+  //period: 1000,
+  //exact: true,
+  allowExecutionInForeground: true
+});*/
+//BackgroundJob.cancel({jobKey: 'foregroundJobKey'});
+//BackgroundJob.cancelAll();
 const CustomLayoutAnimation = { 
-  duration: 500, 
-  create: { type: 'easeIn', property: 'opacity'}, 
-  update: { type: 'easeInEaseOut' }, 
-  delete: { type: 'easeOut', property: 'opacity' } 
+  duration: 300, 
+  //create: { type: 'easeInEaseOut', property: 'scaleY'}, 
+  update: { type: 'easeInEaseOut', property: 'scaleY' }, 
+ // delete: { type: 'easeInEaseOut', property: 'scaleY' }, 
 };
 
 //const { width, height } = Dimensions.get('window')
 var window = Dimensions.get('window');
+
 
 export default class HomeScreen extends Component {
     constructor (props) {
@@ -47,6 +70,7 @@ export default class HomeScreen extends Component {
         this.state = {
           connected: false,
           LightOnCount: 0,
+          LightOnCount2: 0,
           CargaBateria: 100,
           tiempoAtras: false,
           horaview: '',
@@ -70,7 +94,29 @@ export default class HomeScreen extends Component {
           posicion_temp: 0,
           posicion_hum: 0,
 
-          margin: 0
+          margin: 0,
+          flag: 0,
+
+          testt:0,
+
+          valorTemp:14,
+          valorHum:61,
+
+          posi_temp_arriba:0,
+          posi_temp__abajo:0,
+          posi_hum_arriba:0,
+          posi_hum__abajo:0,
+          cuentaatras:2,
+
+          esta_prendido: false,
+          size_countdown:0,
+          status:'error',
+          labeloffon:'OFF',
+        
+          
+          
+          
+
 
          
 
@@ -79,6 +125,7 @@ export default class HomeScreen extends Component {
         
         if (Platform.OS === 'android') {
           UIManager.setLayoutAnimationEnabledExperimental(true)
+          UIManager.setLayoutAnimationEnabledExperimental;
           
         }
       };
@@ -88,8 +135,9 @@ export default class HomeScreen extends Component {
       static navigationOptions = {
         title: 'Home',
         headerStyle: {
-            backgroundColor: 'steelblue',
-            height: window.height*0.1
+            backgroundColor: "#208eed",
+            height: window.height*0.1,
+            
           },
         headerTintColor: 'white',
         headerTitleStyle: {
@@ -112,12 +160,35 @@ export default class HomeScreen extends Component {
     
         }, 1000 * 10);
     }*/
+    algo(){
+      console.log('algo');
+    }
+    componentWillUnmount(){
+      clearInterval(this.intervalo);
+      
+    
+    }
     componentDidMount() {
+      this.intervalo = setInterval(() => {
+        this.readData(); 
+    }, 10000);
+
+     
+    
       if (window.height > 600){
         this.setState({size_bateria: 370})
         this.setState({size_power: 95})
-
+        
         this.setState({margin: 420})
+        this.setState({size_countdown: 40})
+
+        //this.setState({posi_temp_arriba: 100})
+        //this.setState({posi_hum_arriba: 215})
+
+        //this.setState({posi_temp_abajo: 105})
+        //this.setState({posi_temp_abajo: 105})
+
+
 
         //this.setState({posicion_temp: 105})
         //this.setState({posicion_hum: 185})
@@ -126,6 +197,7 @@ export default class HomeScreen extends Component {
         this.setState({size_bateria: 300})
         this.setState({size_power: 82})
         this.setState({margin: 358})
+        this.setState({size_countdown: 35})
 
         //this.setState({posicion_temp: 100})
         //this.setState({posicion_hum: 180})
@@ -133,13 +205,15 @@ export default class HomeScreen extends Component {
         this.setState({size_bateria: 260})
         this.setState({size_power: 73});
         this.setState({margin: 320})
+        this.setState({size_countdown: 30})
 
         //this.setState({posicion_temp: 95})
         //this.setState({posicion_hum: 175})
       }
+      
     };
 
-    _Bajar_sensores = () =>{
+    /*_Bajar_sensores = () =>{
       if (window.height > 600){
          this.setState({posicion_temp: -10})
         this.setState({posicion_hum: 70})
@@ -192,45 +266,84 @@ export default class HomeScreen extends Component {
       }else{
         this.setState({size_bateria: 200})
       }
+    }*/
+    ActivarBomba(){
+      BluetoothSerial.write("A").then((res) => {
+        console.log('activ');
+        ToastAndroid.showWithGravityAndOffset(
+          'Bomba Activada',
+          ToastAndroid.SHORT,
+          ToastAndroid.BOTTOM,
+          0,
+          25,
+        );
+        this.setState({esta_prendido: true});
+        this.setState({labeloffon: 'ON'});
+        this.setState({status: 'success'});
+      })
+      .catch((err) => console.log(err.message))
     }
-
-    
-
-    desactivarBomba(){
-      console.log('desactivarBomba');
-      
+    DesactivarBomba(){
       BluetoothSerial.write("D").then((res) => {
-        
-        console.log('Apagar bomba');
-        ToastAndroid.show(`Bomba Desactivada`, ToastAndroid.SHORT);
-        this.setState({ connected: true });
-        this.switchtest(false);
-      
+        console.log('desac');
+        ToastAndroid.showWithGravityAndOffset(
+          'Bomba Desactivada',
+          ToastAndroid.SHORT,
+          ToastAndroid.BOTTOM,
+          0,
+          25,
+        );
+        this.setState({esta_prendido: false});
+        this.setState({labeloffon: 'OFF'});
+        this.setState({status: 'error'});
+        //this.switchtest(false);
       })
       .catch((err) => console.log(err.message))
      }
-    ActivarBomba(){
-      console.log('cacdf')
-        BluetoothSerial.write("T").then((res) => {
-          
-          console.log('Activar Bomba')
-          ToastAndroid.show(`Bomba Activada`, ToastAndroid.SHORT);
-          this.setState({ connected: true })
-        
-        })
-        .catch((err) => console.log(err.message))
-    }
+    Activar_o_Desactivar(){
+      if(this.state.esta_prendido === false){
+        this.ActivarBomba();
+      }else if (this.state.esta_prendido === true){
+        this.DesactivarBomba();
+      }
+      
+    } 
+    
     readData(){
-        BluetoothSerial.readFromDevice().
-        then((res) => {                       // Arreglar para mostrar numero q se quiera.
-          const strArr = res.split(";");
-          const LightOnCount = strArr[strArr.length - 2];
-          const finalCount = LightOnCount.substring(0, LightOnCount.length);
-          this.setState({ LightOnCount: finalCount })
-        })
-        .catch((err) => console.log(err.message))
+      BluetoothSerial.readFromDevice().
+      then((res) => {
+        //console.log('res',res);
+        const strArr = res.split(";");
+        //console.log(strArr);
+        //console.log('str',strArr);
+        //console.log('largo',strArr.length);
+        
+        if(strArr!=''){
+          var temp = strArr[0];
+          var hum = strArr[1];
+          var temp= Number.parseInt(temp,10);
+          if(temp >= 3){
+          var temp = temp-3;
+          }
+          var hum = Number.parseInt(hum,10);
+
+          this.setState({ valorTemp: temp });
+          this.setState({ valorHum: hum });
+          
+          //console.log('hum',hum);
+          //console.log('temp',temp);
+          
+        }else{
+          //console.log('No se recibe data');
+          //this.setState({ valorTemp: 23 });
+          //this.setState({ valorHum: 44 });
+        }
+      })
+      .catch((err) => console.log(err.message))
     }
-    readData2(){
+
+
+    /*readData2(){
         BluetoothSerial.readFromDevice().
         then((res) => {                       // Arreglar para mostrar numero q se quiera.
           const strArr = res.split(";");
@@ -240,7 +353,7 @@ export default class HomeScreen extends Component {
           this.setState({ CargaBateria: n })
         })
         .catch((err) => console.log(err.message))
-    }
+    }*/
     
     async mostrar_reloj(){
         try {
@@ -264,7 +377,23 @@ export default class HomeScreen extends Component {
                 this.setState({horaview: hour});
                 this.setState({minutoview: minute});
                 this.setState({timer_run: true});            // no mostrar la alerta de termino al principio
-                this.tiempo = setTimeout(() => {
+                this.onPress(0);
+                if(this.state.esta_prendido === false){
+                  this.ActivarBomba();
+                }
+                this.timeoutId = BackgroundTimer.setTimeout(() => {
+                  // this will be executed once after 10 seconds
+                  // even when app is the the background
+                  this.hour=0;
+                  this.minute=0;
+                  this.setState({minutoview:0});
+                  this.setState({horaview:0});
+                  //this.DesactivarBomba();
+                  console.log('termina timeout')
+                  //this.DesactivarBomba();
+                  this.switchtest(false);
+                }, 1000 * 60 * minute + 1000 * 60 * 60 * hour);
+                /*this.tiempo = setTimeout(() => {
                   // Your code
                   //console.log('se acabo');
 
@@ -273,6 +402,10 @@ export default class HomeScreen extends Component {
                   this.minute=0;
                   this.setState({minutoview:0});
                   this.setState({horaview:0});
+                  //this.DesactivarBomba();
+                  console.log('termina timeout')
+                  //this.DesactivarBomba();
+                  this.switchtest(false);
                   
 
                   
@@ -280,7 +413,7 @@ export default class HomeScreen extends Component {
                   
 
               
-                }, 1000 * 59 * minute + 1000 * 60 * 60 * hour);
+                }, 1000 * 60 * minute + 1000 * 60 * 60 * hour);*/
                 
                 if (minute !== 0 || hour !== 0 ){
                 PushNotification.localNotificationSchedule({
@@ -288,7 +421,7 @@ export default class HomeScreen extends Component {
                   title: "Bomba Desactivada", 
                   message: `La bomba estuvo activada: ${hour} ${this.state.horas_o_hora} y ${minute} ${this.state.minutos_o_minuto}`, // (required)
                   autoCancel: true,
-                  date: new Date(Date.now() + (minute * 59 * 1000) + (hour * 60 * 60 * 1000)), 
+                  date: new Date(Date.now() + (minute * 60 * 1000) + (hour * 60 * 60 * 1000)), 
                   
                 });
                 }
@@ -316,7 +449,10 @@ export default class HomeScreen extends Component {
               //this.toggleSwitch();
               
             }else{
-              this.switchtest(false);
+              //this.switchtest(false);
+              this.setState({tituloSwitch: 'Manual'});
+              this.setState({switchActivo: false});
+              //this.desactivarBomba();
             }
           } catch ({code, message}) {
             console.warn('Cannot open time picker', message);
@@ -360,7 +496,7 @@ export default class HomeScreen extends Component {
     onPress(index) {
 
       // Uncomment to animate the next state change.
-      LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
+      //LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
   
       // Or use a Custom Layout Animation
       //LayoutAnimation.configureNext(CustomLayoutAnimation);
@@ -369,8 +505,11 @@ export default class HomeScreen extends Component {
     }
     
     parartimeout(){
-      console.log('PARARTIEMPO');
-      clearTimeout(this.tiempo);
+      //console.log('PARARTIEMPO');
+      //clearTimeout(this.tiempo);
+      console.log('paarar');
+      //this.clearTimeout(this.timer)
+      BackgroundTimer.clearTimeout(this.timeoutId);
     }
     switchtest(value){
       if(value===true){
@@ -378,12 +517,15 @@ export default class HomeScreen extends Component {
           this.setState({tituloSwitch: 'Automatico'});
           this.setState({switchActivo: true});
           this.mostrar_reloj();
-          this._Achicar();
+          //this._Achicar();
           //this._Bajar_sensores();
-          this.onPress(0);
+          //this.onPress(0);
   
-      }else{
-          console.log("false");
+      }else if (value === false){
+        this.DesactivarBomba();
+        console.log('entra aqui');
+      
+          //console.log("false");
           
           this.setState({tituloSwitch: 'Manual'});
           this.setState({switchActivo: false});
@@ -391,12 +533,29 @@ export default class HomeScreen extends Component {
           this.setState({horaview:0});
           PushNotification.cancelLocalNotifications({id: '123'});
           this.parartimeout();
-          this._Agrandar();
+          //this._Agrandar();
           //this._Subir_sensores();
+          //this.onPress(1);
           this.onPress(1);
           
       }
      }
+     /*pararbomba(){
+      this.DesactivarBomba();
+      console.log('entra aqui');
+    
+        //console.log("false");
+        this.onPress(1);
+        this.setState({tituloSwitch: 'Manual'});
+        this.setState({switchActivo: false});
+        this.setState({minutoview:0});
+        this.setState({horaview:0});
+        PushNotification.cancelLocalNotifications({id: '123'});
+        //this.parartimeout();
+        this._Agrandar();
+        //this._Subir_sensores();
+        //this.onPress(1);
+     }*/
     /*parar_reloj(){
 
       this.setState({minutoview: 0});
@@ -422,31 +581,44 @@ export default class HomeScreen extends Component {
       
     }*/
     render() {
-      var LayoutSwitch = this.state.index === 0 ? { flexDirection:'column',height: window.height*0.2} : {};
-      var LayoutSensores = {height: window.height*0.15};
+      var LayoutSwitch = this.state.index === 0 ? {flexDirection:'column',height: window.height*0.2, borderRadius:50,justifyContent:'center', alignItems: 'center', marginLeft:10, marginRight:10} : {};
+      var LayoutPower = this.state.index === 0 ? {}:{flexDirection:'column',height: window.height*0.2, borderRadius:50,justifyContent:'center', alignItems: 'center', marginLeft:10, marginRight:10};
       var LayoutBateria = this.state.index === 0 ? {height: window.height*0.43, justifyContent:'center', alignItems: 'center'} : {height: window.height*0.61, justifyContent:'center', alignItems: 'center'};
-      var cronstyle = this.state.index === 0 ? {justifyContent:'center', alignItems: 'center'} : {display:'none'};
+      var cronstyle = this.state.index === 0 ? {flexDirection:'column',height: window.height*0.2, borderRadius:50,justifyContent:'center', alignItems: 'center', marginLeft:10, marginRight:10} : {display:'none'};
       var reloj = this.state.index  === 0 ? {justifyContent:'center', alignItems: 'center'} : {display:'none'};
 
 
       //var cronstyle = this.state.index === 0 ? {display: 'flex', top: 40} : {display: 'none', width: 400};
       //var reloj = this.state.index === 0 ? {position:'absolute', right: 165, top: 90} : {display: 'none'};
       var power = this.state.index === 0 ? {height:0,width:0} : {justifyContent:'center', alignItems: 'center'};
-      var textosensores = this.state.index === 0 ? {display:'none'}:{ bottom: this.state.margin};
+      var botonPower = this.state.index === 0 ?  {display:'none'}:{};
+      var test = this.state.index === 0 ? {alignSelf:"flex-start",bottom:175/*this.state.posi_temp_arriba*/}:{bottom:190,alignSelf:"flex-start"};
+      var test2 = this.state.index === 0 ? {bottom:255, alignSelf:"flex-end"}:{bottom:270,alignSelf:"flex-end"};
+      var Layoutsensoress = {flex: 1, flexDirection: 'row', justifyContent: 'space-between',height:50};
+      var toolbarTitle = this.state.tituloSwitch === 'Manual' ? {textAlign:'right',fontWeight:'bold',fontSize: 20,flex:1,marginLeft:85,color: "white", alignSelf:'center'}:{textAlign:'right',fontWeight:'bold',fontSize: 20,flex:1,marginLeft:110,color: "white",alignSelf:'center'};
+      const resizeMode = 'center';
+      var powerbadge = this.state.index === 0 ? {display:'none'}:{}
+      var layoutArena = {flexDirection: 'row',backgroundColor:'steelblue',justifyContent:'center', alignItems: 'center', alignSelf:'center',marginTop:20};
+     
+      var badge2 = {height:100,alignSelf:'flex-end',flexDirection: 'row',backgroundColor:'skyblue'};
+      //var badge4 = this.state.cuentaatras === 2 ? {}:{};
       //var middleStyle = this.state.index === 2 ? {width: 40} : {flex: 1};
       //var rightStyle = {flex: 1};
 
       //var whiteHeight = this.state.index * 80;
       
-      const fill = this.state.Porcentajebateria;
+      //const fill = this.state.Porcentajebateria;
+      console.log(this.state.index);
         return (
 
-          <View style={styles.container} >
+          //<ImageBackground source={require('./cool-background.png')} style={styles.container} >
+          <View style={styles.container}> 
           <PushController/>
 
             <View style={styles.toolbar}>
-              <Text style={styles.toolbarTitle}>{this.state.tituloSwitch}</Text>
+            <Text style={toolbarTitle}>{this.state.tituloSwitch}</Text>
                 <View style={styles.toolbarButton}>
+                
                     <Switch
                       value={this.state.switchActivo}
                       onValueChange={(val) => this.switchtest(val)}
@@ -458,188 +630,106 @@ export default class HomeScreen extends Component {
                       //onTintColor="#FFFF"
                     
                     />
+                    
                   </View>
-             </View>
+                  
+            </View>
               
              
-              <View style={styles.content}>
-              
-                <View style={[LayoutSwitch, {backgroundColor: 'skyblue'}]}>
+          <View style={styles.content}>
+                <ImageBackground source={require('./cool-background-2.png')} imageStyle={styles.imagepower2} style={[LayoutSwitch]}>
                     <View style={[cronstyle]}>
                         <CountDown
-                          size={35}
+                          size={33}
+                          //style={[cronstyle]}
                           until={this.state.minutoview * 60 + 60 * 60* this.state.horaview}
-                          onFinish={this.desactivarBomba.bind(this)}
-                          digitStyle={{backgroundColor: '#FFF', borderWidth: 2, borderColor: 'steelblue'}}
+                          digitStyle={{backgroundColor: '#FFF', borderWidth: 2, borderColor: 'white'}}
                           digitTxtStyle={{color: 'steelblue'}}
                           timeLabelStyle={{color: 'red', fontWeight: 'bold'}}
-                          separatorStyle={{color: 'steelblue'}}
+                          separatorStyle={{color: 'white'}}
                           timeToShow={['H', 'M', 'S']}
                           timeLabels={{m: null, s: null}}
                           showSeparator
                           running = {this.state.timer_run}
                           />
-
-                      </View>
-                
-                  </View>
-                <View style={[LayoutSensores, {backgroundColor: 'steelblue'}]}>
-                   
-                    
-                    </View>
-                    
-                
-                
-                        <Text style={{color: 'white',fontSize: 60, left: 10, marginVertical:-82}}>{this.state.temperatura}º</Text> 
-                        <Text style={{color: 'white',fontSize: 60,right:10 ,textAlign:'right'}}>{this.state.humedad}%</Text>  
-                
-                   
-                        
-                
-                 
-                
-
-                {/*<View style={[reloj]}>
-                          <Icon.Button
-                              name="stopwatch"
-                              color = 'steelblue'
-                              size = {60}
-                              backgroundColor="skyblue"
-                              onPress={this.mostrar_reloj.bind(this)}
-                            >
-                              
-                          </Icon.Button>
-
-                          
-
+                        </View> 
+                 </ImageBackground>
+            <ImageBackground source={require('./cool-background-2.png')} imageStyle={styles.imagepower} style={[LayoutPower]}>
+                <Badge
+                  value={this.state.labeloffon}
+                  status={this.state.status}
+                  containerStyle={{ position:'absolute', right:100,top:20}}
+                  badgeStyle = {[powerbadge]}
+                />
+                <Button
+                  icon={
+                  <Icon
+                  name="power-off"
+                  size={this.state.size_power}
+                  color='skyblue'  
                             
-
-                </View>*/}
-                
-
-                      
-                {/*<View style={{height: 100, backgroundColor: 'steelblue'}}>*/}
-                
-                {/*<View style={[Layoutbateria, {backgroundColor: 'steelblue'}]}>
-                
-                </View>*/}
-                
-                <View style={[LayoutBateria]}>
-
-                
-                  <View style={styles.speedom}>
-                 
-
-                  <AnimatedCircularProgress
-                      size={this.state.size_bateria}
-                      width={4}
-                      duration={2000}
-                      fill={fill}
-                      tintColor="#00c3ff"
-                      backgroundColor='steelblue'
-                    >
-                      {fill => <Text style={styles.points}>{Math.round((fill))}%</Text>}
-                    </AnimatedCircularProgress>
-
-                  {/*<AnimatedCircularProgress
-                      
-                      size={155}
-                      width={3}
-                      fill={this.state.fill}
-                      tintColor="#7CFC00"
-                      duration={1500}
-                      prefill={0}
-                      
-                      
-                      rotation={190}
-                      arcSweepAngle={340}
-                      backgroundColor="#3d5875">
-                    
-                      {
-                        (fill) => (
-                          <Text style={styles.points}>
-                            { this.state.fill }%
-                          </Text>
-                        )
-                      }
-                      
-                      
-                    </AnimatedCircularProgress>
-                    </View>
-                  </View>
-
-                  {/*<View style={[styles.box, {width: this.state.w, height: this.state.h}]} 
+                  />
                   
-                  />*/}
-                   {/*<Button title="agrandar" 
-                    onPress={this._Agrandar.bind(this)}
-                    color="#1881cc"
-                    
-            />
-
-                    <Button title="achicar" 
-                                        onPress={this._Achicar.bind(this)}
-                                        color="#1881cc"
-                                        
-                                />*/}
-
-                
-                  </View> 
+                  }
+                  type="clear"
+                  onPress={this.Activar_o_Desactivar.bind(this)}
+                  buttonStyle = {[botonPower]}
                   
-              </View> 
-              
-              {/*<View style={[power]}>
-                      <Icon.Button
-                      name="power-off"
-                      color = "#0fa528"
-                      size = {70}
-                      backgroundColor='skyblue'
-                      onPress={this.toggleSwitch.bind(this)}
-                      >
-                      </Icon.Button>
-              </View>     */}        
-              
-              
-                {/*<View style={{flexDirection: 'column', height: 200}}>
-                  <View style={[SensoresLayout, {backgroundColor: 'skyblue'}]}>
                   
-                  </View>
+                />
                 
-                
-                
-                
-                  </View>*/}
-
-                {/*<View style={{height: 100, backgroundColor: 'skyblue'}}>
-                  
-                  <Text style={styles.textotemperatura}>{this.state.temperatura}</Text>
-                  <Text style={styles.textohumedad}>{this.state.humedad}</Text>
-                </View>*/}
-                 
-              
-              
-                        
-          
+            </ImageBackground>
+            
+            <View style={styles.content2}>
+            
             
 
-          </View>
-          <View style={[textosensores]}>
-                    <Button
-                              icon={
-                                <Icon
-                                  name="power-off"
-                                  size={this.state.size_power}
-                                  color='skyblue'
-                                  
-                                />
-                              }
-                              type="clear"
-                             
-                              //containerStyle={textosensores}
-                              onPress={this.ActivarBomba.bind(this)}
-                            />
-                     </View>
+          <ImageBackground source={require('./cool-background-2.png')} imageStyle={styles.image} style={{marginLeft:10,marginRight:10, width: (window.width/2)-20, height: window.height*0.35, alignSelf:'center', justifyContent:'center',alignItems:'center',borderRadius:20}}>
+            <Text style={{fontSize: 70, color: 'white',alignSelf:'center',marginTop:30}} >{this.state.valorTemp}º</Text>
+           
+            {/*<Badge
+              value={this.state.cuentaatras}
+              status="success"
+              containerStyle={{ position: 'absolute', top: -4, right: -4 }}
+            />*/}
+            
+            <AnimatedEllipsis />
+
+          </ImageBackground>
+          
+          <ImageBackground source={require('./cool-background-2.png')} imageStyle={styles.image} style={{marginRight:10, marginLeft:10, width: (window.width/2)-20, height: window.height*0.35,alignSelf:'center', justifyContent:'center',alignItems:'center',borderRadius:20}}>
+          
+            <Text style={{fontSize: 65, color: 'white',alignSelf: 'center',marginTop:30}} >{this.state.valorHum}%</Text>
+            {/*<Badge
+              value={this.state.cuentaatras}
+              status="success"
+              containerStyle={{ position: 'absolute', top: -4, right: -4 }}
+            />*/}
+            <AnimatedEllipsis />
+              
+            
+          </ImageBackground>
+          
+        </View>
+        
+        
+
+      </View>
+
+         
+      
+      
+
+          {/*<Text style={{fontSize: 60, color: 'white', marginRight:10}} >{this.state.valorHum}%</Text>
+          <Text style={{fontSize: 60, color:'white', marginLeft:10}}>{this.state.valorTemp}º</Text>*/}
+
+            
+
+                          
+          
           </View> 
+
+        
             
         );
     }
@@ -651,12 +741,55 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'skyblue'
+    backgroundColor:'skyblue'
+    
+  },
+  menuItem:{
+    width:'33.3333%',
+    height: '50%',
+    padding:20
+  },
+  image:{
+    width:'100%',
+    height:'100%',
+    borderRadius:20,
+    
+
+  },
+  imagepower:{
+    width:'100%',
+    height:'100%',
+    borderRadius:50,
+    
+
+  },
+  imagepower2:{
+    width:'100%',
+    height:'100%',
+    borderRadius:50
+    
+    
+
   },
   content: {
     flex: 1,
     alignSelf: 'stretch',
+    
   
+  },
+  content2:{
+    flex: 1,
+    flexDirection: 'row',
+    
+    
+    
+        
+  },
+  linearGradient: {
+    flex: 1,
+    paddingLeft: 15,
+    paddingRight: 15,
+    borderRadius: 5
   },
   speedom:{
     justifyContent:'center', 
@@ -669,27 +802,18 @@ const styles = StyleSheet.create({
   },
   toolbarButton:{
     flex: 1,
-    justifyContent: 'flex-end',
-    alignItems: 'flex-end',
-    marginRight: 10
+    
+    alignSelf:'center',
+    marginRight: 20
     
   },
   toolbar:{
-    paddingTop:10,
-    paddingBottom:10,
+    
     flexDirection:'row',
     backgroundColor: 'skyblue',
     height: window.height*0.09
   },
-  toolbarTitle:{
-    textAlign:'right',
-    fontWeight:'bold',
-    fontSize: 20,
-    flex:1,
-    marginTop:6,
-    marginLeft:70,
-    color: "white"
-  },
+  
   points: {
     textAlign: 'center',
     color: 'white',
